@@ -1,18 +1,27 @@
 [project]
-name = "python-gate"
+name = "pyra"
 version = "0.1.0"
 description = "Closed-world Python: Nix is the gate, uv owns the expression"
 readme = "README.md"
 requires-python = ">=3.12"
 license = "MIT"
-authors = [{ name = "Hedronite" }]
+authors = [{ name = "Evan Eugene Pincham" }]
 dependencies = [
     "rich>=13",
 ]
 
 [project.scripts]
-python-gate = "python_gate:main"
+pyra = "pyra:main"
+# Former console script. Same entry point as `pyra`.
+python-gate = "pyra:main"
 
 [build-system]
 requires = ["uv_build>=0.11.0,<0.13.0"]
 build-backend = "uv_build"
+
+# `python_gate` is the pre-rename import path. Both modules ship in this
+# distribution so `import pyra` and `import python_gate` keep working.
+# Drop `python_gate` from this list when you clone the template and do not
+# want the alias.
+[tool.uv.build-backend]
+module-name = ["pyra", "python_gate"]
