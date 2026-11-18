@@ -26,7 +26,7 @@ jobs:
       - name: Import inside the declared env
         run: |
           nix develop --command python -c \
-            "import python_gate, rich; print(python_gate.greet())"
+            "import pyra, python_gate, rich; print(pyra.greet()); assert python_gate.square(12) == pyra.square(12) == 144"
 
   uv:
     name: uv sync --locked
@@ -37,4 +37,6 @@ jobs:
       - name: Sync from uv.lock (packages, not a closure)
         run: uv sync --locked
       - name: Run via the uv-managed env
-        run: uv run python-gate
+        run: |
+          uv run pyra
+          uv run python-gate

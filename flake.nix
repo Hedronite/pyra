@@ -1,5 +1,5 @@
 {
-  description = "Closed-world Python: Nix is the gate, uv owns the expression";
+  description = "Pyra (formerly python-gate): closed-world Python. Nix is the gate, uv owns the expression";
 
   inputs = {
     nixpkgs.url = "github:NixOS/nixpkgs/nixos-unstable";
@@ -44,8 +44,10 @@
       ];
       forAllSystems = lib.genAttrs systems;
 
-      # Rename this (and src/, and [project.scripts]) when you clone the template.
-      projectName = "python-gate";
+      # Rename this when you clone the template, along with [project] name,
+      # [project.scripts], src/<module>/, and tool.uv.build-backend.module-name.
+      # `python-gate` / `python_gate` are compatibility aliases for the old name.
+      projectName = "pyra";
 
       workspace = uv2nix.lib.workspace.loadWorkspace { workspaceRoot = ./.; };
 
@@ -73,18 +75,23 @@
       );
     in
     {
-      # `nix flake new -t github:Hedronite/python-gate`
+      # `nix flake new -t github:Hedronite/pyra`
+      # Output name is `default`.
       templates.default = {
         path = ./.;
-        description = "Closed-world Python: Nix is the gate, uv owns the expression";
+        description = "Pyra (formerly python-gate): closed-world Python. Nix is the gate, uv owns the expression";
         welcomeText = ''
-          # python-gate
+          # Pyra
 
+          Formerly python-gate.
           Nix is the gate. uv owns the expression. `nix run` is the product.
 
-          - Non-Nix: `uv sync` then `uv run python-gate`
+          - Non-Nix: `uv sync` then `uv run pyra`
+            (`uv run python-gate` is the same script)
           - Nix / CI: `nix develop` and `nix run .#`
 
+          This template is Level 3 (pure Python). Level 4 is a direction,
+          not a feature of this tree.
           Commit both lockfiles. A lockfile is not a closure.
           See README.md for the ladder, the peace treaty, and agent grading.
         '';
@@ -110,6 +117,11 @@
         default = {
           type = "app";
           program = "${self.packages.${system}.default}/bin/${projectName}";
+        };
+        # Former name. Same product as `default`.
+        python-gate = {
+          type = "app";
+          program = "${self.packages.${system}.default}/bin/python-gate";
         };
       });
 
@@ -151,11 +163,16 @@
         let
           pkgs = nixpkgs.legacyPackages.${system};
           app = self.packages.${system}.default;
+          pyraRuns = pkgs.runCommand "pyra-runs" { } ''
+            ${app}/bin/pyra > $out
+            # Compat script. Same entry point as pyra.
+            ${app}/bin/python-gate > /dev/null
+          '';
         in
         {
-          "${projectName}-runs" = pkgs.runCommand "${projectName}-runs" { } ''
-            ${app}/bin/${projectName} > $out
-          '';
+          pyra-runs = pyraRuns;
+          # Former check attribute. Same derivation as pyra-runs.
+          python-gate-runs = pyraRuns;
         }
       );
     };
